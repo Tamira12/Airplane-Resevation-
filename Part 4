@@ -1,0 +1,368 @@
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <cstdlib>
+#include <string>
+#define MAX 20
+using namespace std;
+
+// Defines a structure to store account information
+struct Customer
+{
+string customerName;
+string userName;
+string password;
+double savingBalance;
+double checkingBalance;
+};// End of structure from assignment instructions
+
+// Function to read file contents
+void readAccount(Customer acc[], int &counter)
+{
+    	string newLine;
+// Opens the file for reading
+   	 ifstream TreadFi;
+        		TreadFi.open("account.dat");
+
+// Checks if the file unable to open for reading display's error message and stop
+if(!TreadFi)
+{
+    		cout<<"\n ERROR: Unable to open the file account.txt for reading.";
+   		 	exit(0);
+}// End of if condition
+
+// Loops till end of the file
+while(!TreadFi.eof())
+{
+// Reads a name
+   		 getline(TreadFi, acc[counter].customerName);
+// Reads user name and password
+        		TreadFi>>acc[counter].userName>>acc[counter].password;
+// Reads saving and checking balance
+        		TreadFi>>acc[counter].savingBalance>>acc[counter].checkingBalance;
+// Reads new line character
+    		getline(TreadFi, newLine);
+// Increase the record counter by one
+    			counter++;
+}// End of while loop
+
+// Closer the file
+TreadFi.close();
+}// End of function
+
+// Displays menu, accept user name and password
+int menu()
+{
+    	int ch;
+   	 cout<<"\n\n ******************** ATM ******************** ";
+        	cout<<"\n\t 1 - Deposit (adding money to the account)"
+            <<"\n\t 2 - Withdrawal (removing money from the account)"
+            <<"\n\t 3 - Balance Inquiry (check current balance)"
+            <<"\n\t 4 - Transfer Balance (transfer balance from one account to another)"
+            <<"\n\t 5 - Log Out (exits/ends the program)"
+                <<"\n\t What is your choice? ";
+    	cin>>ch;
+    	return ch;
+}// End of function
+
+// Function to return account type
+int accountType()
+{
+    int ch;
+        cout<<"\n\t 1 - Saving Account. \n\t 2 - Checking Account.";
+        cin>>ch;
+return ch;
+}// End of function
+
+// Function to check user name and password
+// If valid then returns the found account index
+// Otherwise returns -1
+int login(Customer acc[], int counter)
+{
+    string userName, password;
+        int validU = -1;
+        int attempt = 0;
+
+// Accepts user name
+        cout<<"\n Enter user name: ";
+            cin>>userName;
+
+// Loops till number of accounts
+for(int c = 0; c < counter; c++)
+{
+// Checks if number of attempt is 3 then return -1 for invalid user
+    if(attempt == 3)
+        return -1;
+
+// Increase the attempt counter by one
+    	attempt++;
+
+// Checks if user entered user name is equals to current account user name
+    if(userName.compare(acc[c].userName) == 0)
+{
+// Accepts password
+        cout<<"\n Enter password: ";
+            cin>>password;
+
+// Checks if user entered password is equals to current account password
+    if(password.compare(acc[c].password) == 0)
+// Returns c as index of found account
+        	return c;
+// Otherwise displays invalid password error
+    else
+        cout<<"\n ERROR: Invalid password. Try Again!";
+}
+}// End of for loop
+
+// Otherwise displays invalid user name error
+        cout<<"\n ERROR: Invalid user name. Try Again!";
+}// End of function
+
+// Function to preform deposit
+void deposit(Customer acc[], int counter)
+{
+    int amt;
+    int accType;
+
+// Calls the function to login
+// and stores the returned found index position of account
+    int pos = login(acc, counter);
+
+// Checks if found index position is not -1
+        if(pos != -1)
+{
+// Accepts deposit amount
+            cout<<"\n Enter deposit amount: ";
+            cin>>amt;
+
+// Checks if user entered amount is less then or equals to 0 then displays error message
+        if(amt <= 0)
+            cout<<"\n ERROR: Deposit amount cannot be negative.";
+
+// Otherwise valid amount
+        else
+{
+// Call the function to accept account type
+            accType = accountType();
+
+// Checks account type and adds amount to respective balance
+switch(accType)
+{
+    case 1:
+        acc[pos].savingBalance += amt;
+        break;
+    case 2:
+        acc[pos].checkingBalance+= amt;
+        break;
+        default:
+        cout<<"\n Invalid account type. Try Again!";
+}// End of switch - case
+}// End of else
+}// End of if condition
+
+// Otherwise invalid user
+    else
+        cout<<"\n ERROR: Invalid user. Cannot perform deposit. Try Again!";
+}// End of function
+
+// Function to preform withdraw
+void withdraw(Customer acc[], int counter)
+{
+    int amt;
+    int accType;
+
+// Calls the function to login
+// and stores the returned found index position of account
+    int pos = login(acc, counter);
+
+// Checks if found index position is not -1
+        if(pos != -1)
+{
+// Accepts withdraw amount
+            cout<<"\n Enter withdraw amount: ";
+            cin>>amt;
+
+// Checks if user entered amount is less then or equals to 0 then displays error message
+        if(amt <= 0)
+            cout<<"\n ERROR: Withdraw amount cannot be negative. Try Again!";
+
+// Otherwise valid amount
+        else
+{
+// Call the function to accept account type
+            accType = accountType();
+
+// Checks account type and adds amount to respective balance
+switch(accType)
+{
+        case 1:
+// Checks if found account saving balance is less then user entered amount
+// then display error message
+            if(acc[pos].savingBalance < amt)
+                cout<<"\n ERROR: Insufficient balance to withdraw from saving account.";
+
+// Otherwise subtract amount from balance
+            else
+                acc[pos].savingBalance -= amt;
+                break;
+        case 2:
+// Checks if found account checking balance is less then user entered amount
+// then display error message
+                if(acc[pos].checkingBalance < amt)
+                    cout<<"\n ERROR: Insufficient balance to withdraw from checking account.";
+
+// Otherwise subtract amount from balance
+                else
+                    acc[pos].checkingBalance -= amt;
+                    break;
+                    default:
+                    cout<<"\n Invalid account type. Try Again!";
+}// End of switch - case
+}// End of else
+}// End of if condition
+
+// Otherwise invalid user
+                else
+                    cout<<"\n ERROR: Invalid user. Cannot perform withdraw. Try Again!";
+}// End of function
+
+// Function to display balance
+void showBalance(Customer acc[], int counter)
+{
+// Calls the function to login
+// and stores the returned found index position of account
+    int pos = login(acc, counter);
+
+// Checks if found index position is not -1
+        if(pos != -1)
+{
+// Call the function to accept account type
+            int accType = accountType();
+
+// Checks account type and adds amount to respective balance
+switch(accType)
+{
+    case 1:
+        cout<<"\n Saving Account Balance: $"<<acc[pos].savingBalance;
+        break;
+    case 2:
+        cout<<"\n Checking Account Balance: $"<<acc[pos].checkingBalance;
+        break;
+        default:
+        cout<<"\n Invalid account type. Try Again!";
+}// End of switch - case
+}// End of if condition
+
+// Otherwise invalid user
+    else
+        cout<<"\n ERROR: Invalid user. Cannot check balance. Try Again!";
+}// End of function
+
+
+// Function to preform transfer
+void transfer(Customer acc[], int counter)
+{
+    int amt;
+    int accType;
+
+// Calls the function to login
+// and stores the returned found index position of account
+    int pos = login(acc, counter);
+
+// Checks if found index position is not -1
+        if(pos != -1)
+{
+// Accepts transfer amount
+            cout<<"\n Enter transfer amount: ";
+            cin>>amt;
+
+// Checks if user entered amount is less then or equals to 0 then displays error message
+        if(amt <= 0)
+            cout<<"\n ERROR: Transfer amount cannot be negative. Try Again!";
+
+// Otherwise valid amount
+        else
+{
+// Call the function to accept account type
+            accType = accountType();
+
+// Checks account type and adds amount to respective balance
+switch(accType)
+{
+    case 1:
+// Checks if found account saving balance is less then user entered amount
+// then display error message
+            if(acc[pos].savingBalance < amt)
+            cout<<"\n ERROR: Insufficient balance to transfer fond from saving account. Try Again!";
+
+// Otherwise subtract amount from saving balance and adds it to checking balance
+        else
+{
+            acc[pos].savingBalance -= amt;
+            acc[pos].checkingBalance += amt;
+}
+
+            break;
+    case 2:
+// Checks if found account checking balance is less then user entered amount
+// then display error message
+        if(acc[pos].checkingBalance < amt)
+        cout<<"\n ERROR: Insufficient balance to transfer from checking account. Try Again!";
+
+// Otherwise subtract amount from checking balance and adds it to saving balance
+        else
+{
+            acc[pos].checkingBalance -= amt;
+            acc[pos].savingBalance += amt;
+}
+
+            break;
+            default:
+            cout<<"\n Invalid account type. Try Again!";
+}// End of switch - case
+}// End of else
+}// End of if condition
+
+// Otherwise invalid user
+        else
+            cout<<"\n ERROR: Invalid user. Cannot perform withdraw.Try Again!";
+}// End of function
+
+// main function definition
+int main()
+{
+// Creates an array of object of class Customer of size MAX
+    Customer acc[MAX];
+// To store number of accounts
+        int counter = 0;
+// Calls the function to read account information
+        readAccount(acc, counter);
+
+// Loops till user choice is not 5
+    do
+{
+// Calls the function to get user choice
+// Calls other function based on returned user choice
+        switch(menu())
+{
+            case 1:
+                deposit(acc, counter);
+                break;
+            case 2:
+                withdraw(acc, counter);
+                break;
+            case 3:
+                showBalance(acc, counter);
+                break;
+            case 4:
+                transfer(acc, counter);
+                break;
+            case 5:
+                cout<<"\n Thank you for using the ATM! ☺️ ";
+                exit(0);
+                default:
+                cout<<"\n Invalid user.";
+}
+}       while(1);// End of do - while loop
+            return 0;
+}// End of main function
